@@ -1,70 +1,240 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// import { ThemedText } from '@/components/ThemedText';
+// import { ThemedView } from '@/components/ThemedView';
+import { allTrue, filter, map, omit, piped, pluck, produce } from 'rambdax'
+import * as datax from './db.json'
+import { useEffect, useState } from 'react';
+
+import { shuffle, range, sortBy } from 'rambdax'
+
+export function nextBee(currentInstance: any){
+  const wordsList = currentInstance.from.split(' ')
+  const randomizedIndexes = shuffle(
+    range(0, wordsList.length)
+  )
+  const wordsRaw = wordsList.map((x, i) => ({
+    originalIndex : i,
+    showIndex     : randomizedIndexes[ i ],
+    word          : x,
+    wrong         : false,
+    hide          : false,
+  }))
+
+  const words = sortBy(
+    (x: any) => x.showIndex,
+    wordsRaw
+  )
+
+  return {
+    answer      : wordsList,
+    translation : currentInstance.to,
+    words,
+  }
+}
+
+let fromKey = 'enPart'
+let toKey = 'bgPart'
+
+function getData (){
+  const data = pluck('doc', datax.rows)
+  const result = piped(
+    data,
+    filter((x: any) => allTrue(
+      () => x[ fromKey ],
+      () => x[ fromKey ].length > 0,
+      () => x[ fromKey ].length < 94,
+      () => x[ toKey ],
+      () => x[ toKey ].length > 0,
+    )),
+    map(produce({
+      from : (x: any)=> x[ fromKey ],
+      to   : (x: any) => x[ toKey ],
+    }))
+  )
+
+  return result
+}
+
+const BACKGROUND = '#67e7e7'
+
+const CONTAINER = {
+  flex           : 1,
+  // flexWrap       : 'wrap',
+  // alignItems     : 'stretch',
+  // justifyContent : 'space-evenly',
+}
+
+const nextStyle = {
+  // fontWeight : 'bold',
+  fontSize   : 33,
+  padding    : 15,
+  margin     : 30,
+  color      : BACKGROUND,
+}
+
+const itemCell = {
+  padding         : 4,
+  margin          : 8,
+  // justifyContent  : 'center',
+  // alignItems      : 'center',
+  // minHeight       : '18%',
+  backgroundColor : '#5d5a58',
+  // width           : 'auto',
+}
+
+const translationCell = omit('backgroundColor')(itemCell)
+
+function getCellStyle(word:any){
+  return word.hide ?
+    styles.itemSolvedCell :
+    styles.itemCell
+}
+
+function getItemStyle(word: any){
+  const itemStyle = {
+    fontWeight : 'bold',
+    fontSize   : 18.8,
+    color      : '#e4e1e1',
+  }
+  const whenWrongStyle = {
+    ...itemStyle,
+    color : '#ffa0aa',
+  }
+  const whenSolvedStyle = {
+    ...itemStyle,
+    color : BACKGROUND,
+  }
+
+  if (word.hide) return whenSolvedStyle
+  if (word.wrong) return whenWrongStyle
+
+  return itemStyle
+}
 
 export default function HomeScreen() {
+  let [ showNext, setShowNext ] = useState(false)
+  let [answer, setAnswer] = useState('')
+  let [index, setIndex] = useState(0)
+  let [visibleAnswer, setVisibleAnswer] = useState('')
+  const [ data, setData ] = useState(getData())
+  const [ current, setCurrent ] = useState<any>(null)
+  const [ currentDataInstance, setCurrentDataInstance ] = useState<any>(null)
+  let handleNext = () => {
+    console.log('next')
+  }
+  const nextButton = () =>
+    <View style={ styles.itemContainer }>
+      <View style={ styles.itemCell }>
+        <Text onPress={ handleNext } style={ nextStyle }>
+            Next
+        </Text>
+      </View>
+    </View>
+  let handlePress = (i: any) => () => {
+    console.log(i)
+  }
+const listOfQuestions = () =>
+  <View style={ styles.itemContainer }>
+    {currentDataInstance.words.map(
+      (word: any, i: any) => 
+          <View 
+            key={`${currentDataInstance.words[0].word}-${i}`} 
+            style={getCellStyle(word)}
+          >
+            <Text
+              onPress={handlePress(i)} 
+              // style={getItemStyle(word)}
+            >
+              {word.word}
+            </Text>
+          </View>
+        
+    )}
+  </View>
+  useEffect(() => {
+    let datax = getData()
+    setData(datax)
+    setCurrent(datax[ 0 ])
+    setCurrentDataInstance(nextBee(datax[ 0 ]))
+  }, [])
+  if(currentDataInstance === null) return null
+  
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={ styles.rootContainer }>
+        <View style={ styles.translationMargin } />
+        <View style={ styles.translation }>
+          <View style={ styles.genericContainer }>
+            <Text
+              onPress={ this.handleNext }
+              style={ translationCell }
+            >
+              {currentDataInstance.translation}
+            </Text>
+          </View>
+        </View>
+
+        <View style={ styles.answer }>
+          <View style={ styles.genericContainer }>
+            <Text style={ translationCell }>
+              {visibleAnswer}
+            </Text>
+          </View>
+        </View>
+        <View style={ styles.item }>
+          {
+            showNext ?
+              nextButton() :
+              listOfQuestions()
+          }
+        </View>
+      </View>
   );
 }
 
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  rootContainer : {
+    flex            : 0,
+    backgroundColor : BACKGROUND,
+    width           : '100%',
+    height          : '100%',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  translationMargin : {
+    flex            : 0,
+    backgroundColor : BACKGROUND,
+    width           : '100%',
+    height          : '5%',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  translation : {
+    flex            : 0,
+    backgroundColor : BACKGROUND,
+    width           : '100%',
+    height          : '10%',
   },
-});
+  genericContainer : CONTAINER,
+  answer           : {
+    flex            : 0,
+    backgroundColor : '#9eb4ad',
+    width           : '100%',
+    height          : '10%',
+  },
+  item : {
+    flex   : 0,
+    width  : '100%',
+    height : '75%',
+  },
+  itemContainer : {
+    flex           : 1,
+    flexDirection  : 'row',
+    flexWrap       : 'wrap',
+    alignItems     : 'stretch',
+    justifyContent : 'space-evenly',
+  },
+  itemCell,
+  itemSolvedCell : {
+    ...itemCell,
+    backgroundColor : BACKGROUND,
+  },
+})
+
