@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "selfrefactor.order.words",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -31,6 +32,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "01a6c7f0-eacc-4d80-be13-b2a81c57d8de"
+      }
     }
   }
 }
