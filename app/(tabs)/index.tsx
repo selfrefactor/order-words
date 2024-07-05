@@ -1,5 +1,5 @@
 import { StyleSheet, View, Text } from 'react-native';
-import {  omit, range, shuffle, sortBy} from 'rambdax'
+import {  omit, range, shuffle, sortBy, update} from 'rambdax'
 import * as data from './db.json'
 import { useEffect, useState } from 'react';
 
@@ -65,7 +65,7 @@ function getCellStyle(word:any){
 
 function getItemStyle(word: any){
   const itemStyle = {
-    fontWeight : 'bold',
+    // fontWeight : 'bold',
     fontSize   : 18.8,
     color      : '#e4e1e1',
   }
@@ -85,14 +85,17 @@ function getItemStyle(word: any){
 }
 
 export default function HomeScreen() {
+  let [globalIndex, setGlobalIndex] = useState(0)
   let [ showNext, setShowNext ] = useState(false)
-  let [answer, setAnswer] = useState('')
   let [index, setIndex] = useState(0)
   let [visibleAnswer, setVisibleAnswer] = useState('')
-  const [ current, setCurrent ] = useState<any>(null)
   const [ currentDataInstance, setCurrentDataInstance ] = useState<any>(null)
   let handleNext = () => {
-    console.log('next')
+      setGlobalIndex(globalIndex + 1)
+      setShowNext(false)
+      setIndex(0)
+      setVisibleAnswer('')
+      setCurrentDataInstance(nextBee(data[ globalIndex + 1 ]))
   }
   const nextButton = () =>
     <View style={ styles.itemContainer }>
@@ -102,10 +105,32 @@ export default function HomeScreen() {
         </Text>
       </View>
     </View>
+
   let handlePress = (i: any) => () => {
-    console.log(i)
+    let found = currentDataInstance.words.find((x: any) => x.showIndex === i)
+    if(found.originalIndex !== index) return
+    const newWords = update(
+      found.showIndex,
+      {
+        ...found,
+        hide : true,
+      },
+      currentDataInstance.words
+    )
+    let newIndex=  index + 1
+    if(newIndex === currentDataInstance.words.length){
+      setShowNext(true)
+    }
+    setIndex(newIndex)
+    setCurrentDataInstance({
+      ...currentDataInstance,
+      words : newWords,
+    })
+    let visibleAnswerx = currentDataInstance.answer.filter((_, i) => i < newIndex).join(' ')
+    setVisibleAnswer(visibleAnswerx)
   }
-const listOfQuestions = () =>
+
+  const listOfQuestions = () =>
   <View style={ styles.itemContainer }>
     {currentDataInstance.words.map(
       (word: any, i: any) => 
@@ -115,7 +140,7 @@ const listOfQuestions = () =>
           >
             <Text
               onPress={handlePress(i)} 
-              // style={getItemStyle(word)}
+              style={getItemStyle(word)}
             >
               {word.word}
             </Text>
@@ -124,8 +149,7 @@ const listOfQuestions = () =>
     )}
   </View>
   useEffect(() => {
-    setCurrent(data[ 0 ])
-    setCurrentDataInstance(nextBee(data[ 0 ]))
+    setCurrentDataInstance(nextBee(data[ globalIndex ]))
   }, [])
   if(currentDataInstance === null) return null
 
