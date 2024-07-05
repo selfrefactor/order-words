@@ -1,14 +1,9 @@
 import { StyleSheet, View, Text } from 'react-native';
-
-// import { ThemedText } from '@/components/ThemedText';
-// import { ThemedView } from '@/components/ThemedView';
-import { allTrue, filter, map, omit, piped, pluck, produce } from 'rambdax'
-import * as datax from './db.json'
+import {  omit, range, shuffle, sortBy} from 'rambdax'
+import * as data from './db.json'
 import { useEffect, useState } from 'react';
 
-import { shuffle, range, sortBy } from 'rambdax'
-
-export function nextBee(currentInstance: any){
+function nextBee(currentInstance: any){
   const wordsList = currentInstance.from.split(' ')
   const randomizedIndexes = shuffle(
     range(0, wordsList.length)
@@ -31,29 +26,6 @@ export function nextBee(currentInstance: any){
     translation : currentInstance.to,
     words,
   }
-}
-
-let fromKey = 'enPart'
-let toKey = 'bgPart'
-
-function getData (){
-  const data = pluck('doc', datax.rows)
-  const result = piped(
-    data,
-    filter((x: any) => allTrue(
-      () => x[ fromKey ],
-      () => x[ fromKey ].length > 0,
-      () => x[ fromKey ].length < 94,
-      () => x[ toKey ],
-      () => x[ toKey ].length > 0,
-    )),
-    map(produce({
-      from : (x: any)=> x[ fromKey ],
-      to   : (x: any) => x[ toKey ],
-    }))
-  )
-
-  return result
 }
 
 const BACKGROUND = '#67e7e7'
@@ -117,7 +89,6 @@ export default function HomeScreen() {
   let [answer, setAnswer] = useState('')
   let [index, setIndex] = useState(0)
   let [visibleAnswer, setVisibleAnswer] = useState('')
-  const [ data, setData ] = useState(getData())
   const [ current, setCurrent ] = useState<any>(null)
   const [ currentDataInstance, setCurrentDataInstance ] = useState<any>(null)
   let handleNext = () => {
@@ -153,13 +124,11 @@ const listOfQuestions = () =>
     )}
   </View>
   useEffect(() => {
-    let datax = getData()
-    setData(datax)
-    setCurrent(datax[ 0 ])
-    setCurrentDataInstance(nextBee(datax[ 0 ]))
+    setCurrent(data[ 0 ])
+    setCurrentDataInstance(nextBee(data[ 0 ]))
   }, [])
   if(currentDataInstance === null) return null
-  
+
   return (
     <View style={ styles.rootContainer }>
         <View style={ styles.translationMargin } />
