@@ -49,6 +49,8 @@ const nextStyle = {
 const itemCell = {
   padding         : 4,
   margin          : 8,
+  // border radius  : 4,
+  borderRadius    : 4,
   // justifyContent  : 'center',
   // alignItems      : 'center',
   // minHeight       : '18%',
