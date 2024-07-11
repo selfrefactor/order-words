@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "select-correct-sentence-order",
-    "slug": "select-correct-sentence-order",
+    "name": "order-words",
+    "slug": "order-words",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
