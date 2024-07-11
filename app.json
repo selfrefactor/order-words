@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "order-words",
-    "slug": "order-words",
+    "name": "select-correct-sentence-order",
+    "slug": "select-correct-sentence-order",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "selfrefactor.order.words",
+      "package": "selfrefactor.select.correct.sentence.order",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

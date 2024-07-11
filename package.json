@@ -1,5 +1,5 @@
 {
-  "name": "order-words",
+  "name": "select-correct-sentence-order",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
