@@ -87,7 +87,7 @@ function getItemStyle(word: any){
   return itemStyle
 }
 
-export function App() {
+export default function App() {
   let [globalIndex, setGlobalIndex] = useState(0)
   let [ showNext, setShowNext ] = useState(false)
   let [index, setIndex] = useState(0)
